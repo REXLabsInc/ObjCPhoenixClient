@@ -45,14 +45,22 @@
     for (NSString *key in [self keyEnumerator])
     {
         id value = [self objectForKey:key];
-        @try {
-            value = [value stringValue];
+        if ([value isKindOfClass:[NSString class]]) {
+            // String is what we want.
+        } else if ([value respondsToSelector:@selector(stringValue)]) {
+            @try {
+                value = [value stringValue];
+            }
+            @catch (NSException *exception) {
+
+            }
+        } else {
+            value = nil;
         }
-        @catch (NSException *exception) {
-            
+        if (value != nil) {
+            NSString *escapedValue = [value URLEncodedString];
+            [pairs addObject:[NSString stringWithFormat:@"%@=%@", key, escapedValue]];
         }
-        NSString *escapedValue = [value URLEncodedString];
-        [pairs addObject:[NSString stringWithFormat:@"%@=%@", key, escapedValue]];
     }
     
     return [pairs componentsJoinedByString:@"&"];
